@@ -43,7 +43,7 @@ services:
       context: ./FE
       dockerfile: Dockerfile.frontend
       args:
-        VITE_API_URL: https://api.whaleestudio.my.id
+        VITE_API_URL: https://api.whaleestudio.my.id/api
         VITE_APP_NAME: SICAMS
     image: sicams-frontend:latest
     container_name: sicams_frontend
