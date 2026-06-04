@@ -1,0 +1,55 @@
+# ============================================================
+# Cloudflare Tunnel Configuration
+# File: ~/.cloudflared/config.yml
+# Server: Ubuntu (192.168.1.3)
+# ============================================================
+#
+# CATATAN: File ini diletakkan di server Ubuntu Anda di:
+#   ~/.cloudflared/config.yml
+#   ATAU /etc/cloudflared/config.yml
+#
+# Prasyarat:
+#   1. cloudflared sudah terinstall di server
+#   2. Tunnel sudah dibuat: cloudflared tunnel create sicams-tunnel
+#   3. DNS sudah dikonfigurasi di Cloudflare Dashboard
+#
+# ============================================================
+
+tunnel: <TUNNEL_ID>          # Ganti dengan Tunnel ID Anda (lihat: cloudflared tunnel list)
+credentials-file: /home/<USER>/.cloudflared/<TUNNEL_ID>.json
+
+# ── Ingress Rules ──────────────────────────────────────────
+ingress:
+  # Frontend SICAMS → Container port 5173
+  - hostname: sicams.whaleestudio.my.id
+    service: http://localhost:5173
+    originRequest:
+      noTLSVerify: false
+      connectTimeout: 30s
+      tcpKeepAlive: 30s
+      keepAliveTimeout: 90s
+      keepAliveConnections: 100
+      httpHostHeader: sicams.whaleestudio.my.id
+
+  # Backend API → Container port 8000
+  - hostname: api.whaleestudio.my.id
+    service: http://localhost:8000
+    originRequest:
+      noTLSVerify: false
+      connectTimeout: 30s
+      tcpKeepAlive: 30s
+      keepAliveTimeout: 90s
+      keepAliveConnections: 100
+      httpHostHeader: api.whaleestudio.my.id
+      # Allow larger request bodies for file uploads
+      http2Origin: true
+
+  # Aplikasi yang sudah berjalan (TIDAK diubah)
+  - hostname: ftikfest2026.my.id
+    service: http://localhost:3000
+
+  - hostname: bukutamu.whaleestudio.my.id
+    service: http://localhost:8080
+
+  # Default: catch-all
+  - service: http_status:404

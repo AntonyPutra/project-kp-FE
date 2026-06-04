@@ -1,0 +1,60 @@
+name: SICAMS CI/CD Production
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install Frontend Dependencies
+        run: npm ci
+        
+      - name: Build Frontend
+        run: npm run build
+        
+      # Optional: Jika backend sudah di-setup dengan PHP testing
+      # - name: Setup PHP
+      #   uses: shivammathur/setup-php@v2
+      #   with:
+      #     php-version: '8.3'
+      # - name: Install Backend Dependencies
+      #   run: cd backend && composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      # - name: Run PHPUnit
+      #   run: cd backend && vendor/bin/phpunit
+
+  deploy:
+    name: Deploy to Ubuntu Server
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}      # misal: 192.168.1.3 atau IP public jika ada (karena pakai tunnel, sebaiknya pakai tailscale IP)
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /var/www/sicams
+            
+            # Pull latest changes
+            git pull origin main
+            
+            # Jalankan script deployment otomatis
+            chmod +x ./scripts/deploy.sh
+            ./scripts/deploy.sh deploy
