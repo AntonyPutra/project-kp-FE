@@ -32,7 +32,7 @@ export default function UserLetters() {
     queryKey: ['letters'],
     queryFn: async () => {
       const res = await api.get('/letters');
-      return res.data.data;
+      return res.data;
     }
   });
 

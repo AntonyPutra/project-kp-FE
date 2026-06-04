@@ -31,7 +31,7 @@ export default function LetterManagement() {
     queryKey: ['letters', 'admin'],
     queryFn: async () => {
       const res = await api.get('/letters');
-      return res.data.data;
+      return res.data;
     }
   });
 

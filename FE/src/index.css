@@ -561,6 +561,7 @@ p { line-height: 1.7; }
   flex-direction: column;
   gap: 1.75rem;
   animation: fadeIn 0.3s ease;
+  min-width: 0;
 }
 
 .page-title {
