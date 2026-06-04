@@ -189,7 +189,7 @@ export default function BlockchainExplorer() {
                       border: '1px solid var(--border)',
                       animation: 'fadeIn 0.2s ease',
                     }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem 1.5rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem 1.5rem' }}>
                         {[
                           { label: 'Block Index', value: `#${block.id}` },
                           { label: 'Action', value: block.action },
@@ -206,14 +206,15 @@ export default function BlockchainExplorer() {
                           </div>
                         ))}
                       </div>
-                      <div style={{ marginTop: '0.875rem', paddingTop: '0.875rem', borderTop: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div style={{ marginTop: '0.875rem', paddingTop: '0.875rem', borderTop: '1px solid var(--border)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
                         <div>
                           <div style={{ fontSize: '0.6875rem', color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.375rem' }}>Old Values</div>
                           <pre style={{
                             fontFamily: 'var(--font-mono)', fontSize: '0.75rem',
                             color: '#ef4444', background: 'rgba(0,0,0,0.3)',
                             padding: '0.75rem', borderRadius: 'var(--radius-md)',
-                            overflow: 'auto', margin: 0, maxHeight: 150
+                            overflow: 'auto', margin: 0, maxHeight: 200,
+                            whiteSpace: 'pre-wrap', wordWrap: 'break-word'
                           }}>
                             {block.old_values ? JSON.stringify(block.old_values, null, 2) : 'null'}
                           </pre>
@@ -224,7 +225,8 @@ export default function BlockchainExplorer() {
                             fontFamily: 'var(--font-mono)', fontSize: '0.75rem',
                             color: '#10b981', background: 'rgba(0,0,0,0.3)',
                             padding: '0.75rem', borderRadius: 'var(--radius-md)',
-                            overflow: 'auto', margin: 0, maxHeight: 150
+                            overflow: 'auto', margin: 0, maxHeight: 200,
+                            whiteSpace: 'pre-wrap', wordWrap: 'break-word'
                           }}>
                             {block.new_values ? JSON.stringify(block.new_values, null, 2) : 'null'}
                           </pre>

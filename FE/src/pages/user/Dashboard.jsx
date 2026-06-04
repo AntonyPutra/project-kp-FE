@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, Heart, Bell, LogOut, User, Shield, ChevronRight, Home, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Heart, Bell, LogOut, User, Shield, ChevronRight, Home, HelpCircle, Menu } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
 
@@ -20,6 +20,7 @@ export default function UserDashboard() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifCount] = useState(2);
 
   const handleLogout = () => {
@@ -30,16 +31,15 @@ export default function UserDashboard() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-surface)' }}>
+      {/* Sidebar Overlay (mobile) */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:99, backdropFilter:'blur(4px)' }}
+        />
+      )}
       {/* Sidebar */}
-      <aside style={{
-        width: 'var(--sidebar-width)',
-        height: '100vh',
-        background: 'var(--bg-base)',
-        borderRight: '1px solid var(--border)',
-        display: 'flex', flexDirection: 'column',
-        position: 'fixed', left: 0, top: 0, zIndex: 100,
-        overflowY: 'auto',
-      }}>
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         {/* Logo */}
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
           <div style={{ width: 36, height: 36, background: 'var(--gradient-success)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(16,185,129,0.4)' }}>
@@ -68,7 +68,7 @@ export default function UserDashboard() {
           {NAV_ITEMS.map(item => {
             const active = location.pathname === item.path || (item.path !== '/user/dashboard' && location.pathname.startsWith(item.path));
             return (
-              <button key={item.path} onClick={() => navigate(item.path)} className={`nav-item ${active ? 'active' : ''}`} style={{ width: '100%', marginBottom: '0.25rem' }}>
+              <button key={item.path} onClick={() => { navigate(item.path); setSidebarOpen(false); }} className={`nav-item ${active ? 'active' : ''}`} style={{ width: '100%', marginBottom: '0.25rem' }}>
                 <div style={{ width: 30, height: 30, borderRadius: '8px', background: active ? item.color + '22' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <item.icon size={16} color={active ? item.color : 'currentColor'} />
                 </div>
@@ -86,8 +86,16 @@ export default function UserDashboard() {
       </aside>
 
       {/* Main */}
-      <div style={{ flex: 1, marginLeft: 'var(--sidebar-width)' }}>
-        <header style={{ height: 'var(--header-height)', background: 'rgba(10,15,30,0.85)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '1rem', position: 'sticky', top: 0, zIndex: 50 }}>
+      <div className="main-content">
+        <header className="header">
+          {/* Mobile menu */}
+          <button
+            className="btn-ghost"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            style={{ display: window.innerWidth <= 1024 ? 'block' : 'none' }}
+          >
+            <Menu size={20} />
+          </button>
           <div style={{ flex: 1 }}>
             <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Portal Masyarakat</span>
             <ChevronRight size={14} color="var(--text-disabled)" style={{ margin: '0 0.375rem', display: 'inline' }} />

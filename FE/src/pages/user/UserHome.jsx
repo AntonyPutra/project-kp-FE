@@ -3,14 +3,8 @@ import { FileText, Heart, Clock, CheckCircle, ArrowRight, Bell, Bot, Package } f
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
-const MY_LETTERS = [
-  { id: 1, tracking: 'SURAT-2026-0101', type: 'Surat Domisili',    status: 'submitted',    date: '2026-06-04' },
-  { id: 2, tracking: 'SURAT-2026-0088', type: 'Surat Keterangan',  status: 'approved',     date: '2026-05-28' },
-];
-
-const MY_AID = [
-  { id: 1, name: 'BLT Dana Desa 2026', status: 'pending', date: '2026-06-01' },
-];
+import { useQuery } from '@tanstack/react-query';
+import api from '../../lib/api';
 
 const STATUS_STYLE = {
   submitted:    { label: 'Menunggu',     class: 'badge-warning', dot: 'pending' },
@@ -24,6 +18,23 @@ const STATUS_STYLE = {
 export default function UserHome() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  // Fetch real data
+  const { data: myLetters = [] } = useQuery({
+    queryKey: ['letters', 'my'],
+    queryFn: async () => {
+      const res = await api.get('/letters');
+      return res.data;
+    }
+  });
+
+  const { data: myAids = [] } = useQuery({
+    queryKey: ['social-aids', 'my-applications'],
+    queryFn: async () => {
+      const res = await api.get('/social-aids/applications');
+      return res.data;
+    }
+  });
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Selamat Pagi' : hour < 17 ? 'Selamat Siang' : 'Selamat Malam';
@@ -60,10 +71,10 @@ export default function UserHome() {
       {/* Quick stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
         {[
-          { label: 'Surat Diajukan', value: MY_LETTERS.length, icon: FileText, color: '#06b6d4' },
-          { label: 'Surat Disetujui', value: MY_LETTERS.filter(l => l.status === 'approved').length, icon: CheckCircle, color: '#10b981' },
-          { label: 'Bantuan Diajukan', value: MY_AID.length, icon: Heart, color: '#f59e0b' },
-          { label: 'Menunggu', value: MY_LETTERS.filter(l => l.status === 'submitted').length + MY_AID.filter(a => a.status === 'pending').length, icon: Clock, color: '#6366f1' },
+          { label: 'Surat Diajukan', value: myLetters.length, icon: FileText, color: '#06b6d4' },
+          { label: 'Surat Disetujui', value: myLetters.filter(l => l.status === 'approved').length, icon: CheckCircle, color: '#10b981' },
+          { label: 'Bantuan Diajukan', value: myAids.length, icon: Heart, color: '#f59e0b' },
+          { label: 'Menunggu', value: myLetters.filter(l => l.status === 'submitted').length + myAids.filter(a => a.status === 'pending').length, icon: Clock, color: '#6366f1' },
         ].map((s, i) => (
           <div key={i} className="card" style={{ padding: '1.25rem', animation: `fadeIn 0.3s ${i * 80}ms ease both` }}>
             <div style={{ width: 40, height: 40, borderRadius: '10px', background: s.color + '20', border: `1px solid ${s.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.875rem' }}>
@@ -76,7 +87,7 @@ export default function UserHome() {
       </div>
 
       {/* My Requests */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
         {/* Letters */}
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -85,26 +96,26 @@ export default function UserHome() {
               Lihat Semua <ArrowRight size={14} />
             </button>
           </div>
-          {MY_LETTERS.length === 0 ? (
+          {myLetters.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
               <FileText size={28} style={{ margin: '0 auto 0.5rem', opacity: 0.3 }} />
               <p style={{ fontSize: '0.8125rem' }}>Belum ada pengajuan surat</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-              {MY_LETTERS.map(l => (
+              {myLetters.slice(0, 3).map(l => (
                 <div key={l.id} style={{ padding: '0.75rem', background: 'var(--bg-muted)', borderRadius: 'var(--radius-md)', cursor: 'pointer' }}
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-muted)'}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
-                      <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>{l.type}</div>
-                      <span className="code" style={{ fontSize: '0.6875rem' }}>{l.tracking}</span>
+                      <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>{l.type === 'domisili' ? 'Surat Domisili' : l.type}</div>
+                      <span className="code" style={{ fontSize: '0.6875rem' }}>{l.tracking_code}</span>
                     </div>
-                    <span className={`badge ${STATUS_STYLE[l.status].class}`} style={{ fontSize: '0.6875rem' }}>{STATUS_STYLE[l.status].label}</span>
+                    <span className={`badge ${STATUS_STYLE[l.status]?.class}`} style={{ fontSize: '0.6875rem' }}>{STATUS_STYLE[l.status]?.label || l.status}</span>
                   </div>
-                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-disabled)', marginTop: '0.375rem' }}>{l.date}</div>
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-disabled)', marginTop: '0.375rem' }}>{new Date(l.created_at).toLocaleDateString('id-ID')}</div>
                 </div>
               ))}
             </div>
@@ -122,15 +133,21 @@ export default function UserHome() {
               Lihat Semua <ArrowRight size={14} />
             </button>
           </div>
-          {MY_AID.map(a => (
-            <div key={a.id} style={{ padding: '0.75rem', background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 'var(--radius-md)', marginBottom: '0.625rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>{a.name}</div>
-                <span className={`badge ${STATUS_STYLE[a.status].class}`} style={{ fontSize: '0.6875rem' }}>{STATUS_STYLE[a.status].label}</span>
-              </div>
-              <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.375rem' }}>Didaftar: {a.date}</div>
+          {myAids.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+              Belum ada pendaftaran bantuan sosial
             </div>
-          ))}
+          ) : (
+            myAids.slice(0, 3).map(a => (
+              <div key={a.id} style={{ padding: '0.75rem', background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 'var(--radius-md)', marginBottom: '0.625rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>{a.social_aid?.name || 'Program Bantuan'}</div>
+                  <span className={`badge ${STATUS_STYLE[a.status]?.class}`} style={{ fontSize: '0.6875rem' }}>{STATUS_STYLE[a.status]?.label || a.status}</span>
+                </div>
+                <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.375rem' }}>Didaftar: {new Date(a.created_at).toLocaleDateString('id-ID')}</div>
+              </div>
+            ))
+          )}
 
           {/* Available programs */}
           <div style={{ marginTop: '0.75rem', padding: '0.875rem', background: 'rgba(16,185,129,0.05)', border: '1px dashed rgba(16,185,129,0.25)', borderRadius: 'var(--radius-md)' }}>

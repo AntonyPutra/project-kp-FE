@@ -76,6 +76,62 @@ export default function LetterManagement() {
     return 1;
   };
 
+  const printLetter = (letter) => {
+    const typeLabel = LETTER_TYPES[letter.type] || letter.type;
+    const content = `
+      <html>
+        <head>
+          <title>Surat ${letter.tracking_code}</title>
+          <style>
+            body { font-family: 'Times New Roman', Times, serif; padding: 40px; color: #000; line-height: 1.6; }
+            .header { text-align: center; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+            .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; }
+            .header p { margin: 5px 0 0 0; font-size: 14px; }
+            .content { margin-top: 30px; }
+            .content table { width: 100%; margin-top: 20px; }
+            .content td { padding: 8px 0; vertical-align: top; }
+            .content td:first-child { width: 200px; }
+            .footer { margin-top: 80px; text-align: right; }
+            .signature { margin-top: 80px; border-top: 1px solid #000; display: inline-block; padding-top: 5px; width: 200px; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>PEMERINTAH KOTA SIMULASI</h1>
+            <p>Jalan Teknologi No. 123, Kec. Inovasi, Kota Simulasi, 12345</p>
+          </div>
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="text-decoration: underline; margin: 0;">${typeLabel.toUpperCase()}</h2>
+            <p style="margin: 5px 0 0 0;">Nomor: ${letter.tracking_code}</p>
+          </div>
+          <div class="content">
+            <p>Yang bertanda tangan di bawah ini, Kepala Kelurahan Inovasi, menerangkan dengan sebenarnya bahwa:</p>
+            <table>
+              <tr><td>Nama</td><td>: <strong>${letter.user?.name || '_______________'}</strong></td></tr>
+              <tr><td>NIK</td><td>: ${letter.user?.nik || '_______________'}</td></tr>
+              <tr><td>Email</td><td>: ${letter.user?.email || '_______________'}</td></tr>
+              <tr><td>Keperluan</td><td>: ${letter.purpose}</td></tr>
+            </table>
+            <p style="margin-top: 20px;">Orang tersebut di atas benar-benar penduduk kelurahan kami dan surat ini dibuat untuk keperluan sebagaimana disebutkan di atas.</p>
+            <p>Demikian surat keterangan ini dibuat untuk dipergunakan sebagaimana mestinya.</p>
+          </div>
+          <div class="footer">
+            <p>Dikeluarkan di: Simulasi<br/>Pada tanggal: ${new Date(letter.updated_at || letter.created_at).toLocaleDateString('id-ID')}</p>
+            <div class="signature">
+              Kepala Kelurahan Inovasi
+            </div>
+          </div>
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `;
+    const win = window.open('', '_blank');
+    win.document.write(content);
+    win.document.close();
+  };
+
   if (isLoading) {
     return <div className="p-8 text-center"><Loader className="animate-spin inline mr-2"/> Memuat Data Surat...</div>;
   }
@@ -166,7 +222,7 @@ export default function LetterManagement() {
                         </>
                       )}
                       {letter.status === 'approved' ? (
-                        <button className="btn btn-ghost btn-sm" style={{ color: '#06b6d4' }}>
+                        <button className="btn btn-ghost btn-sm" style={{ color: '#06b6d4' }} onClick={() => printLetter(letter)}>
                           <Download size={14} />
                         </button>
                       ) : null}
@@ -246,7 +302,7 @@ export default function LetterManagement() {
                 </>
               )}
               {selected.status === 'approved' && (
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={() => printLetter(selected)}>
                   <Download size={14} /> Download Surat
                 </button>
               )}

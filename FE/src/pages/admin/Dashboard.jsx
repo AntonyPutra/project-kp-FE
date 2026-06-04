@@ -88,20 +88,7 @@ export default function AdminDashboard() {
       )}
 
       {/* ── SIDEBAR ─────────────────────────────────── */}
-      <aside style={{
-        width: 'var(--sidebar-width)',
-        height: '100vh',
-        background: 'var(--bg-base)',
-        borderRight: '1px solid var(--border)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        left: 0, top: 0,
-        zIndex: 100,
-        overflowY: 'auto',
-        transform: sidebarOpen ? 'translateX(0)' : undefined,
-        transition: 'transform 0.3s ease',
-      }}>
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         {/* Logo */}
         <div style={{
           padding: '1.25rem 1.5rem',
@@ -197,26 +184,14 @@ export default function AdminDashboard() {
       </aside>
 
       {/* ── MAIN CONTENT ──────────────────────────── */}
-      <div style={{ flex: 1, marginLeft: 'var(--sidebar-width)', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div className="main-content">
         {/* Header */}
-        <header style={{
-          height: 'var(--header-height)',
-          background: 'rgba(10,15,30,0.85)',
-          backdropFilter: 'blur(16px)',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 1.5rem',
-          gap: '1rem',
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-        }}>
+        <header className="header">
           {/* Mobile menu */}
           <button
             className="btn-ghost"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={{ display: 'none' }}
+            style={{ display: window.innerWidth <= 1024 ? 'block' : 'none' }}
           >
             <Menu size={20} />
           </button>

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  BarChart2, FileText, Heart, Package, Link2, Download,
   LogOut, Shield, TrendingUp, TrendingDown, Users,
   CheckCircle, Clock, AlertTriangle, ChevronRight,
-  Activity, Globe, Zap,
+  Activity, Globe, Zap, Menu,
 } from 'lucide-react';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement,
@@ -63,6 +62,7 @@ export default function PimpinanDashboard() {
   const navigate = useNavigate();
   const [counts, setCounts] = useState(KPI_DATA.map(() => 0));
   const [activeNav, setActiveNav] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     KPI_DATA.forEach((kpi, idx) => {
@@ -95,13 +95,17 @@ export default function PimpinanDashboard() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-surface)' }}>
+      {/* Sidebar Overlay (mobile) */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:99, backdropFilter:'blur(4px)' }}
+        />
+      )}
       {/* Sidebar — Premium Gold Theme */}
-      <aside style={{
-        width: 'var(--sidebar-width)', height: '100vh',
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`} style={{
         background: 'linear-gradient(180deg, #0a0f1e 0%, #0d1a2a 100%)',
         borderRight: '1px solid rgba(245,158,11,0.15)',
-        display: 'flex', flexDirection: 'column',
-        position: 'fixed', left: 0, top: 0, zIndex: 100, overflowY: 'auto',
       }}>
         {/* Logo */}
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -131,7 +135,7 @@ export default function PimpinanDashboard() {
           {NAV.map(item => (
             <button
               key={item.key}
-              onClick={() => setActiveNav(item.key)}
+              onClick={() => { setActiveNav(item.key); setSidebarOpen(false); }}
               className={`nav-item ${activeNav === item.key ? 'active' : ''}`}
               style={{ width: '100%', marginBottom: '0.25rem', ...(activeNav === item.key ? { background: 'rgba(245,158,11,0.12)', color: '#fbbf24' } : {}) }}
             >
@@ -151,14 +155,20 @@ export default function PimpinanDashboard() {
       </aside>
 
       {/* Main */}
-      <div style={{ flex: 1, marginLeft: 'var(--sidebar-width)' }}>
+      <div className="main-content">
         {/* Header */}
-        <header style={{
-          height: 'var(--header-height)', background: 'rgba(10,15,30,0.9)', backdropFilter: 'blur(20px)',
+        <header className="header" style={{
+          background: 'rgba(10,15,30,0.9)', backdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(245,158,11,0.12)',
-          display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '1rem',
-          position: 'sticky', top: 0, zIndex: 50,
         }}>
+          {/* Mobile menu */}
+          <button
+            className="btn-ghost"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            style={{ display: window.innerWidth <= 1024 ? 'block' : 'none' }}
+          >
+            <Menu size={20} />
+          </button>
           <div style={{ flex: 1 }}>
             <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Executive Portal</span>
             <ChevronRight size={14} color="var(--text-disabled)" style={{ margin: '0 0.375rem', display: 'inline' }} />
@@ -191,7 +201,7 @@ export default function PimpinanDashboard() {
               <button className="btn btn-secondary btn-sm">
                 <Activity size={14} /> Real-time
               </button>
-              <button className="btn btn-primary btn-sm" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 4px 15px rgba(245,158,11,0.3)' }}>
+              <button className="btn btn-primary btn-sm" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 4px 15px rgba(245,158,11,0.3)' }} onClick={() => window.print()}>
                 <Download size={14} /> Unduh Laporan
               </button>
             </div>

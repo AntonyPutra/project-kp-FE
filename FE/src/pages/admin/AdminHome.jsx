@@ -260,8 +260,7 @@ export default function AdminHome() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await new Promise(r => setTimeout(r, 1000));
-    setRefreshing(false);
+    window.location.reload();
   };
 
   return (
@@ -279,7 +278,7 @@ export default function AdminHome() {
             <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
             Refresh
           </button>
-          <button className="btn btn-primary btn-sm">
+          <button className="btn btn-primary btn-sm" onClick={() => window.print()}>
             <Download size={14} />
             Export Laporan
           </button>
@@ -347,7 +346,7 @@ export default function AdminHome() {
               <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)' }}>Aktivitas Terbaru</h3>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Log aktivitas real-time sistem</p>
             </div>
-            <button className="btn btn-ghost btn-sm">
+            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/admin/activity')}>
               <Eye size={14} />
               Lihat Semua
             </button>

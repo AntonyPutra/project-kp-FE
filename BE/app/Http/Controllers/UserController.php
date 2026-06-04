@@ -36,7 +36,7 @@ class UserController extends Controller
             'email' => $request->email,
             'nik' => $request->nik,
             'role' => $request->role,
-            'password' => Hash::make($request->password ?? 'Admin123!'), // Default password
+            'password' => Hash::make(empty($request->password) ? 'Admin123!' : $request->password), // Default password if empty
         ]);
 
         return response()->json($user, 201);

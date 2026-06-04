@@ -239,7 +239,7 @@ export default function AssetManagement() {
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem' }}>Scan QR Code untuk melihat detail aset</p>
             </div>
             <div className="modal-footer" style={{ justifyContent: 'center' }}>
-              <button className="btn btn-primary btn-sm">
+              <button className="btn btn-primary btn-sm" onClick={() => window.print()}>
                 <QrCode size={14} />
                 Download QR Code
               </button>
