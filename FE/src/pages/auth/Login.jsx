@@ -7,7 +7,7 @@ import api from '../../lib/api';
 
 // Mock user accounts for demo
 const DEMO_USERS = {
-  'superadmin@sicams.id':   { password: 'Admin123!', role: 'super-admin', name: 'Super Admin',     avatar: 'SA' },
+  'superadmin@sicams.id':   { password: 'Admin123!', role: 'super_admin', name: 'Super Admin',     avatar: 'SA' },
   'admin@sicams.id':        { password: 'Admin123!', role: 'admin',       name: 'Admin Kelurahan', avatar: 'AK' },
   'petugas@sicams.id':      { password: 'Admin123!', role: 'petugas',     name: 'Petugas Lapangan',avatar: 'PL' },
   'user@sicams.id':         { password: 'User123!',  role: 'masyarakat',  name: 'Budi Santoso',    avatar: 'BS' },
@@ -15,7 +15,7 @@ const DEMO_USERS = {
 };
 
 const ROLE_LABELS = {
-  'super-admin': { label: 'Super Admin', color: '#6366f1' },
+  'super_admin': { label: 'Super Admin', color: '#6366f1' },
   'admin':       { label: 'Admin', color: '#8b5cf6' },
   'petugas':     { label: 'Petugas', color: '#06b6d4' },
   'masyarakat':  { label: 'Masyarakat', color: '#10b981' },
