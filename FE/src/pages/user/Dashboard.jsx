@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, Heart, Bell, LogOut, User, Shield, ChevronRight, Home, HelpCircle } from 'lucide-react';
-import { useAuth } from '../../App';
+import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
 
 import UserHome from './UserHome';
@@ -17,7 +17,7 @@ const NAV_ITEMS = [
 ];
 
 export default function UserDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [notifCount] = useState(2);

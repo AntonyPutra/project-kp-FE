@@ -6,7 +6,7 @@ import {
   Shield, ChevronRight, Menu, X, Bot, Activity,
   Layers, AlertCircle,
 } from 'lucide-react';
-import { useAuth } from '../../App';
+import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
 
 // Sub-pages
@@ -54,7 +54,7 @@ const ROLE_LABELS = {
 };
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);

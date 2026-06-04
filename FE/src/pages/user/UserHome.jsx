@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileText, Heart, Clock, CheckCircle, ArrowRight, Bell, Bot, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuthStore } from '../../store/authStore';
 
 const MY_LETTERS = [
   { id: 1, tracking: 'SURAT-2026-0101', type: 'Surat Domisili',    status: 'submitted',    date: '2026-06-04' },
@@ -22,7 +22,7 @@ const STATUS_STYLE = {
 };
 
 export default function UserHome() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
 
   const hour = new Date().getHours();

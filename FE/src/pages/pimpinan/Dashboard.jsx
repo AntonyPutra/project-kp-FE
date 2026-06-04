@@ -11,7 +11,7 @@ import {
   LineElement, BarElement, ArcElement, Tooltip, Legend, Filler,
 } from 'chart.js';
 import { Line, Bar, Doughnut, Radar } from 'react-chartjs-2';
-import { useAuth } from '../../App';
+import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, Filler);
@@ -59,7 +59,7 @@ const barOpts = { ...CHART_OPTS, plugins: { ...CHART_OPTS.plugins, legend: { ...
 const doughOpts = { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } }, tooltip: CHART_OPTS.plugins.tooltip } };
 
 export default function PimpinanDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [counts, setCounts] = useState(KPI_DATA.map(() => 0));
   const [activeNav, setActiveNav] = useState('overview');
