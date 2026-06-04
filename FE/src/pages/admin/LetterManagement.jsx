@@ -1,57 +1,84 @@
 import React, { useState } from 'react';
-import { FileText, Search, CheckCircle, XCircle, Clock, Eye, Download, ChevronRight } from 'lucide-react';
+import { FileText, Search, CheckCircle, XCircle, Clock, Eye, Download, ChevronRight, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../../lib/api';
 
 const STATUS_CONFIG = {
   submitted:    { label: 'Diajukan',        class: 'badge-info',    step: 1 },
   under_review: { label: 'Sedang Ditinjau', class: 'badge-warning', step: 2 },
   approved:     { label: 'Disetujui',       class: 'badge-success', step: 3 },
   rejected:     { label: 'Ditolak',         class: 'badge-danger',  step: 0 },
-  completed:    { label: 'Selesai',         class: 'badge-cyan',    step: 4 },
 };
 
 const LETTER_TYPES = {
   domisili:     'Surat Domisili',
   usaha:        'Surat Keterangan Usaha',
-  keterangan:   'Surat Keterangan',
+  keterangan:   'Surat Keterangan Umum',
   tidak_mampu:  'Surat Tidak Mampu',
 };
 
-const LETTERS = [
-  { id: 1, tracking: 'SURAT-2026-0101', user: 'Budi Santoso',  type: 'domisili',    purpose: 'Keperluan BPJS Kesehatan', status: 'submitted',    step: 1, submitted: '2026-06-04 09:00' },
-  { id: 2, tracking: 'SURAT-2026-0100', user: 'Siti Rahayu',   type: 'usaha',       purpose: 'Pembukaan Rekening Usaha', status: 'approved',     step: 3, submitted: '2026-06-03 14:00' },
-  { id: 3, tracking: 'SURAT-2026-0099', user: 'Ahmad Fauzi',   type: 'keterangan',  purpose: 'Melamar Pekerjaan',        status: 'under_review', step: 2, submitted: '2026-06-03 10:30' },
-  { id: 4, tracking: 'SURAT-2026-0098', user: 'Dewi Lestari',  type: 'domisili',    purpose: 'KPR Rumah',                status: 'completed',    step: 4, submitted: '2026-06-02 08:00' },
-  { id: 5, tracking: 'SURAT-2026-0097', user: 'Rudi Hartono',  type: 'tidak_mampu', purpose: 'Beasiswa Pendidikan',      status: 'rejected',     step: 0, submitted: '2026-06-01 16:00' },
-];
+const STEPS = ['Diajukan', 'Ditinjau', 'Selesai'];
 
 export default function LetterManagement() {
-  const [letters, setLetters] = useState(LETTERS);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selected, setSelected] = useState(null);
 
+  // Fetch letters (Admin sees all letters)
+  const { data: letters = [], isLoading } = useQuery({
+    queryKey: ['letters', 'admin'],
+    queryFn: async () => {
+      const res = await api.get('/letters');
+      return res.data.data;
+    }
+  });
+
+  // Mutation to update status
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }) => {
+      const res = await api.put(`/letters/${id}/status`, { status });
+      return res.data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries(['letters']);
+      toast.success(variables.status === 'rejected' ? 'Pengajuan ditolak.' : 'Pengajuan disetujui/diteruskan.');
+      setSelected(null);
+    },
+    onError: () => {
+      toast.error('Gagal memperbarui status.');
+    }
+  });
+
   const filtered = letters.filter(l => {
-    const matchSearch = l.user.toLowerCase().includes(search.toLowerCase()) ||
-                        l.tracking.toLowerCase().includes(search.toLowerCase()) ||
-                        LETTER_TYPES[l.type]?.toLowerCase().includes(search.toLowerCase());
+    const userName = l.user?.name || '';
+    const matchSearch = userName.toLowerCase().includes(search.toLowerCase()) ||
+                        l.tracking_code.toLowerCase().includes(search.toLowerCase()) ||
+                        (LETTER_TYPES[l.type] || '').toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'all' || l.status === statusFilter;
     return matchSearch && matchStatus;
   });
 
-  const approve = (id) => {
-    setLetters(prev => prev.map(l => l.id === id ? { ...l, status: l.status === 'submitted' ? 'under_review' : 'approved', step: l.step + 1 } : l));
-    toast.success('Pengajuan surat disetujui dan diteruskan.');
-    setSelected(null);
+  const approve = (id, currentStatus) => {
+    const nextStatus = currentStatus === 'submitted' ? 'under_review' : 'approved';
+    updateStatusMutation.mutate({ id, status: nextStatus });
   };
 
   const reject = (id) => {
-    setLetters(prev => prev.map(l => l.id === id ? { ...l, status: 'rejected', step: 0 } : l));
-    toast.error('Pengajuan surat ditolak.');
-    setSelected(null);
+    updateStatusMutation.mutate({ id, status: 'rejected' });
   };
 
-  const STEPS = ['Diajukan', 'Petugas', 'Admin', 'Pimpinan', 'Selesai'];
+  const getStepIndex = (status) => {
+    if (status === 'submitted') return 1;
+    if (status === 'under_review') return 2;
+    if (status === 'approved' || status === 'rejected') return 3;
+    return 1;
+  };
+
+  if (isLoading) {
+    return <div className="p-8 text-center"><Loader className="animate-spin inline mr-2"/> Memuat Data Surat...</div>;
+  }
 
   return (
     <div className="page-content">
@@ -80,7 +107,7 @@ export default function LetterManagement() {
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
           <div className="input-with-icon" style={{ flex: 1, minWidth: 200 }}>
             <Search size={16} className="input-icon" />
-            <input className="input" placeholder="Cari nama, nomor tracking..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input className="input" placeholder="Cari nama pemohon, nomor tracking..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <select className="input" style={{ width: 'auto' }} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
             <option value="all">Semua Status</option>
@@ -105,46 +132,52 @@ export default function LetterManagement() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map(letter => (
-              <tr key={letter.id}>
-                <td><span className="code" style={{ fontSize: '0.75rem' }}>{letter.tracking}</span></td>
-                <td style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-primary)' }}>{letter.user}</td>
-                <td style={{ fontSize: '0.8125rem' }}>{LETTER_TYPES[letter.type]}</td>
-                <td style={{ fontSize: '0.8125rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{letter.purpose}</td>
-                <td><span className={`badge ${STATUS_CONFIG[letter.status].class}`}>{STATUS_CONFIG[letter.status].label}</span></td>
-                <td>
-                  {/* Mini progress */}
-                  <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                    {STEPS.map((s, i) => (
-                      <div key={i} style={{ width: 20, height: 4, borderRadius: 2, background: i < letter.step ? '#6366f1' : letter.status === 'rejected' ? (i === 0 ? '#ef4444' : 'var(--bg-muted)') : 'var(--bg-muted)', transition: 'background 0.3s' }} />
-                    ))}
-                  </div>
-                </td>
-                <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{letter.submitted}</td>
-                <td>
-                  <div style={{ display: 'flex', gap: '0.375rem' }}>
-                    <button className="btn btn-ghost btn-sm" onClick={() => setSelected(letter)} title="Detail">
-                      <Eye size={14} />
-                    </button>
-                    {(letter.status === 'submitted' || letter.status === 'under_review') && (
-                      <>
-                        <button className="btn btn-success btn-sm" onClick={() => approve(letter.id)} style={{ fontSize: '0.75rem' }}>
-                          <CheckCircle size={12} />
-                        </button>
-                        <button className="btn btn-danger btn-sm" onClick={() => reject(letter.id)} style={{ fontSize: '0.75rem' }}>
-                          <XCircle size={12} />
-                        </button>
-                      </>
-                    )}
-                    {letter.status === 'approved' || letter.status === 'completed' ? (
-                      <button className="btn btn-ghost btn-sm" style={{ color: '#06b6d4' }}>
-                        <Download size={14} />
+            {filtered.map(letter => {
+              const currentStep = getStepIndex(letter.status);
+              return (
+                <tr key={letter.id}>
+                  <td><span className="code" style={{ fontSize: '0.75rem' }}>{letter.tracking_code}</span></td>
+                  <td style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-primary)' }}>{letter.user?.name || 'Unknown'}</td>
+                  <td style={{ fontSize: '0.8125rem' }}>{LETTER_TYPES[letter.type] || letter.type}</td>
+                  <td style={{ fontSize: '0.8125rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{letter.purpose}</td>
+                  <td><span className={`badge ${STATUS_CONFIG[letter.status]?.class || 'badge-muted'}`}>{STATUS_CONFIG[letter.status]?.label || letter.status}</span></td>
+                  <td>
+                    {/* Mini progress */}
+                    <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                      {STEPS.map((s, i) => (
+                        <div key={i} style={{ width: 20, height: 4, borderRadius: 2, background: i < currentStep ? '#6366f1' : letter.status === 'rejected' ? (i === 0 ? '#ef4444' : 'var(--bg-muted)') : 'var(--bg-muted)', transition: 'background 0.3s' }} />
+                      ))}
+                    </div>
+                  </td>
+                  <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{new Date(letter.created_at).toLocaleString('id-ID')}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.375rem' }}>
+                      <button className="btn btn-ghost btn-sm" onClick={() => setSelected(letter)} title="Detail">
+                        <Eye size={14} />
                       </button>
-                    ) : null}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {(letter.status === 'submitted' || letter.status === 'under_review') && (
+                        <>
+                          <button className="btn btn-success btn-sm" onClick={() => approve(letter.id, letter.status)} style={{ fontSize: '0.75rem' }} disabled={updateStatusMutation.isPending}>
+                            <CheckCircle size={12} />
+                          </button>
+                          <button className="btn btn-danger btn-sm" onClick={() => reject(letter.id)} style={{ fontSize: '0.75rem' }} disabled={updateStatusMutation.isPending}>
+                            <XCircle size={12} />
+                          </button>
+                        </>
+                      )}
+                      {letter.status === 'approved' ? (
+                        <button className="btn btn-ghost btn-sm" style={{ color: '#06b6d4' }}>
+                          <Download size={14} />
+                        </button>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+            {filtered.length === 0 && (
+              <tr><td colSpan="8" className="text-center p-4">Tidak ada pengajuan ditemukan.</td></tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -156,7 +189,7 @@ export default function LetterManagement() {
             <div className="modal-header">
               <div>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Detail Pengajuan Surat</h3>
-                <span className="code" style={{ fontSize: '0.75rem' }}>{selected.tracking}</span>
+                <span className="code" style={{ fontSize: '0.75rem' }}>{selected.tracking_code}</span>
               </div>
               <button onClick={() => setSelected(null)} className="btn-ghost" style={{ padding: 4 }}><XCircle size={18} /></button>
             </div>
@@ -165,8 +198,9 @@ export default function LetterManagement() {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: '16px', left: 0, right: 0, height: 2, background: 'var(--border)', zIndex: 0 }} />
                 {STEPS.map((step, i) => {
-                  const done = i < selected.step && selected.status !== 'rejected';
-                  const current = i === selected.step - 1 && selected.status !== 'rejected';
+                  const currentStep = getStepIndex(selected.status);
+                  const done = i < currentStep && selected.status !== 'rejected';
+                  const current = i === currentStep - 1 && selected.status !== 'rejected';
                   return (
                     <div key={step} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.375rem', zIndex: 1 }}>
                       <div style={{
@@ -185,12 +219,13 @@ export default function LetterManagement() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
                 {[
-                  { label: 'Pemohon', value: selected.user },
-                  { label: 'Jenis Surat', value: LETTER_TYPES[selected.type] },
+                  { label: 'Pemohon', value: selected.user?.name },
+                  { label: 'Jenis Surat', value: LETTER_TYPES[selected.type] || selected.type },
                   { label: 'Keperluan', value: selected.purpose },
-                  { label: 'Status', value: STATUS_CONFIG[selected.status].label },
-                  { label: 'Tanggal Pengajuan', value: selected.submitted },
-                  { label: 'No. Tracking', value: selected.tracking },
+                  { label: 'Status', value: STATUS_CONFIG[selected.status]?.label || selected.status },
+                  { label: 'Tanggal Pengajuan', value: new Date(selected.created_at).toLocaleString('id-ID') },
+                  { label: 'No. Tracking', value: selected.tracking_code },
+                  { label: 'Catatan', value: selected.notes || '-' },
                 ].map(f => (
                   <div key={f.label}>
                     <div style={{ fontSize: '0.6875rem', color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>{f.label}</div>
@@ -202,15 +237,15 @@ export default function LetterManagement() {
             <div className="modal-footer">
               {(selected.status === 'submitted' || selected.status === 'under_review') && (
                 <>
-                  <button className="btn btn-danger" onClick={() => reject(selected.id)}>
+                  <button className="btn btn-danger" onClick={() => reject(selected.id)} disabled={updateStatusMutation.isPending}>
                     <XCircle size={14} /> Tolak
                   </button>
-                  <button className="btn btn-success" onClick={() => approve(selected.id)}>
+                  <button className="btn btn-success" onClick={() => approve(selected.id, selected.status)} disabled={updateStatusMutation.isPending}>
                     <CheckCircle size={14} /> Setujui & Teruskan
                   </button>
                 </>
               )}
-              {(selected.status === 'approved' || selected.status === 'completed') && (
+              {selected.status === 'approved' && (
                 <button className="btn btn-primary">
                   <Download size={14} /> Download Surat
                 </button>

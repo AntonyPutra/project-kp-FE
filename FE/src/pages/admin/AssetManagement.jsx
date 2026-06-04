@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Package, Plus, Search, QrCode, Edit2, Trash2, CheckCircle, XCircle, ArrowRightLeft, MapPin, Tag } from 'lucide-react';
+import { Package, Plus, Search, QrCode, Edit2, Trash2, CheckCircle, XCircle, ArrowRightLeft, MapPin, Tag, Loader } from 'lucide-react';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import toast from 'react-hot-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../../lib/api';
 
 const CONDITION_CONFIG = {
   excellent: { label: 'Sangat Baik', class: 'badge-success', color: '#10b981' },
@@ -17,32 +19,60 @@ const STATUS_CONFIG = {
   lost:        { label: 'Hilang',         class: 'badge-danger',  dot: 'offline' },
 };
 
-const INITIAL_ASSETS = [
-  { id: 1, code: 'AST-ELEK-001', name: 'Laptop Dell Inspiron 15', category: 'Elektronik', location: 'Kantor Utama',    condition: 'good',      status: 'available',   price: 8500000,  purchaseDate: '2025-01-15' },
-  { id: 2, code: 'AST-ELEK-002', name: 'Proyektor Epson EB-S41',  category: 'Elektronik', location: 'Ruang Rapat',     condition: 'excellent', status: 'available',   price: 4200000,  purchaseDate: '2025-02-10' },
-  { id: 3, code: 'AST-FURN-001', name: 'Meja Rapat Oval 10 Orang',category: 'Furniture',  location: 'Ruang Rapat',     condition: 'good',      status: 'available',   price: 3500000,  purchaseDate: '2024-06-01' },
-  { id: 4, code: 'AST-KEND-001', name: 'Motor Honda Vario 125',   category: 'Kendaraan',  location: 'Garasi',          condition: 'fair',      status: 'borrowed',    price: 18000000, purchaseDate: '2023-08-20' },
-  { id: 5, code: 'AST-ELEK-003', name: 'Printer HP LaserJet',     category: 'Elektronik', location: 'Kantor Utama',    condition: 'fair',      status: 'maintenance', price: 2800000,  purchaseDate: '2024-01-10' },
-  { id: 6, code: 'AST-PERA-001', name: 'Generator Portable 2500W',category: 'Peralatan',  location: 'Gudang',          condition: 'good',      status: 'available',   price: 5500000,  purchaseDate: '2025-03-05' },
-];
-
 function formatCurrency(val) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
 }
 
 export default function AssetManagement() {
-  const [assets, setAssets] = useState(INITIAL_ASSETS);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
   const [showQR, setShowQR] = useState(null);
-  const [form, setForm] = useState({ name: '', category: 'Elektronik', location: '', condition: 'good', status: 'available', price: '', purchaseDate: '' });
+  const [form, setForm] = useState({ name: '', category: 'Elektronik', location: '', condition: 'good', status: 'available', price: '', purchase_date: '' });
 
+  // Fetch Assets
+  const { data: assets = [], isLoading, isError } = useQuery({
+    queryKey: ['assets'],
+    queryFn: async () => {
+      const res = await api.get('/assets');
+      return res.data.data;
+    }
+  });
+
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: (newAsset) => api.post('/assets', newAsset),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['assets']);
+      toast.success('Aset berhasil ditambahkan!');
+      setShowModal(false);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => api.put(`/assets/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['assets']);
+      toast.success('Aset berhasil diperbarui!');
+      setShowModal(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => api.delete(`/assets/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['assets']);
+      toast.success('Aset berhasil dihapus.');
+    },
+  });
+
+  // Filter Logic
   const filtered = assets.filter(a => {
-    const matchSearch = a.name.toLowerCase().includes(search.toLowerCase()) ||
-                        a.code.toLowerCase().includes(search.toLowerCase()) ||
-                        a.category.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = a.name?.toLowerCase().includes(search.toLowerCase()) ||
+                        a.code?.toLowerCase().includes(search.toLowerCase()) ||
+                        a.category?.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'all' || a.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -55,22 +85,32 @@ export default function AssetManagement() {
 
   const openCreate = () => {
     setEditAsset(null);
-    setForm({ name: '', category: 'Elektronik', location: '', condition: 'good', status: 'available', price: '', purchaseDate: '' });
+    setForm({ name: '', category: 'Elektronik', location: '', condition: 'good', status: 'available', price: '', purchase_date: '' });
     setShowModal(true);
   };
 
   const handleSave = () => {
     if (!form.name) { toast.error('Nama aset wajib diisi.'); return; }
-    const newCode = `AST-${form.category.slice(0, 4).toUpperCase()}-${String(assets.length + 1).padStart(3, '0')}`;
+    
+    // Prepare payload
+    const payload = {
+      name: form.name,
+      category: form.category,
+      location: form.location,
+      condition: form.condition,
+      status: form.status,
+      price: Number(form.price) || 0,
+      purchase_date: form.purchase_date || null
+    };
+
     if (editAsset) {
-      setAssets(prev => prev.map(a => a.id === editAsset.id ? { ...a, ...form } : a));
-      toast.success('Data aset berhasil diperbarui!');
+      updateMutation.mutate({ id: editAsset.id, data: payload });
     } else {
-      setAssets(prev => [{ ...form, id: Date.now(), code: newCode, price: Number(form.price) || 0 }, ...prev]);
-      toast.success(`Aset ${form.name} berhasil ditambahkan dengan kode ${newCode}!`);
+      createMutation.mutate(payload);
     }
-    setShowModal(false);
   };
+
+  if (isLoading) return <div className="p-8 text-center"><Loader className="animate-spin inline mr-2"/> Memuat Data Aset...</div>;
 
   return (
     <div className="page-content">
@@ -147,25 +187,30 @@ export default function AssetManagement() {
                     <span style={{ fontSize: '0.8125rem' }}>{asset.location}</span>
                   </div>
                 </td>
-                <td><span className={`badge ${CONDITION_CONFIG[asset.condition].class}`}>{CONDITION_CONFIG[asset.condition].label}</span></td>
-                <td><span className={`badge ${STATUS_CONFIG[asset.status].class}`}>{STATUS_CONFIG[asset.status].label}</span></td>
+                <td><span className={`badge ${CONDITION_CONFIG[asset.condition]?.class || 'badge-muted'}`}>{CONDITION_CONFIG[asset.condition]?.label || asset.condition}</span></td>
+                <td><span className={`badge ${STATUS_CONFIG[asset.status]?.class || 'badge-muted'}`}>{STATUS_CONFIG[asset.status]?.label || asset.status}</span></td>
                 <td style={{ fontSize: '0.8125rem', fontFamily: 'var(--font-mono)' }}>{formatCurrency(asset.price)}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.375rem' }}>
                     <button className="btn btn-ghost btn-sm" onClick={() => setShowQR(asset)} title="QR Code" style={{ color: '#a78bfa' }}>
                       <QrCode size={14} />
                     </button>
-                    <button className="btn btn-ghost btn-sm" onClick={() => { setEditAsset(asset); setForm({ ...asset }); setShowModal(true); }} title="Edit">
+                    <button className="btn btn-ghost btn-sm" onClick={() => { setEditAsset(asset); setForm({ ...asset, purchase_date: asset.purchase_date?.split('T')[0] || '' }); setShowModal(true); }} title="Edit">
                       <Edit2 size={14} />
                     </button>
                     <button className="btn btn-ghost btn-sm" title="Hapus" style={{ color: '#f87171' }}
-                      onClick={() => { setAssets(p => p.filter(a => a.id !== asset.id)); toast.success('Aset dihapus.'); }}>
+                      onClick={() => { if(confirm('Hapus aset ini?')) deleteMutation.mutate(asset.id); }}>
                       <Trash2 size={14} />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan="8" style={{ textAlign: 'center', padding: '2rem' }}>Tidak ada aset yang ditemukan.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -243,14 +288,14 @@ export default function AssetManagement() {
                 </div>
                 <div className="input-group">
                   <label className="input-label">Tanggal Beli</label>
-                  <input className="input" type="date" value={form.purchaseDate} onChange={e => setForm(p => ({ ...p, purchaseDate: e.target.value }))} />
+                  <input className="input" type="date" value={form.purchase_date} onChange={e => setForm(p => ({ ...p, purchase_date: e.target.value }))} />
                 </div>
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
-              <button className="btn btn-primary" onClick={handleSave}>
-                <CheckCircle size={14} />
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)} disabled={createMutation.isPending || updateMutation.isPending}>Batal</button>
+              <button className="btn btn-primary" onClick={handleSave} disabled={createMutation.isPending || updateMutation.isPending}>
+                {createMutation.isPending || updateMutation.isPending ? <Loader size={14} className="animate-spin" /> : <CheckCircle size={14} />}
                 {editAsset ? 'Simpan' : 'Tambah Aset'}
               </button>
             </div>

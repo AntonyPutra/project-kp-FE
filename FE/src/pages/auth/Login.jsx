@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Shield, Lock, Mail, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../App';
+import { useAuthStore } from '../../store/authStore';
+import api from '../../lib/api';
 
 // Mock user accounts for demo
 const DEMO_USERS = {
@@ -23,7 +24,7 @@ const ROLE_LABELS = {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = useAuthStore();
   const [step, setStep] = useState('login'); // 'login' | 'otp'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,6 +33,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [tempUser, setTempUser] = useState(null);
+  const [tempToken, setTempToken] = useState(null);
   const [otpTimer, setOtpTimer] = useState(60);
   const [particles, setParticles] = useState([]);
   const otpRefs = useRef([]);
@@ -65,19 +67,19 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
 
-    const found = DEMO_USERS[email.toLowerCase()];
-    if (!found || found.password !== password) {
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      setTempUser(res.data.user);
+      setTempToken(res.data.access_token);
+      setLoading(false);
+      toast.success('Kredensial valid! Verifikasi OTP dikirim ke email.');
+      setStep('otp');
+      setOtpTimer(60);
+    } catch (err) {
       setError('Email atau password salah. Silakan coba lagi.');
       setLoading(false);
-      return;
     }
-    setTempUser({ ...found, email });
-    setLoading(false);
-    toast.success('Kredensial valid! Verifikasi OTP dikirim ke email.');
-    setStep('otp');
-    setOtpTimer(60);
   };
 
   const handleOtpChange = (val, idx) => {
@@ -104,16 +106,15 @@ export default function LoginPage() {
 
     // Demo: accept any 6 digits or "123456"
     if (code === '123456' || code.length === 6) {
-      login(tempUser);
+      login(tempUser, tempToken);
       toast.success(`Selamat datang, ${tempUser.name}!`);
       const roleMap = {
-        'super-admin': '/admin/dashboard',
+        'super_admin': '/admin/dashboard',
         'admin': '/admin/dashboard',
-        'petugas': '/admin/dashboard',
         'masyarakat': '/user/dashboard',
         'pimpinan': '/pimpinan/dashboard',
       };
-      navigate(roleMap[tempUser.role]);
+      navigate(roleMap[tempUser.role] || '/');
     } else {
       setError('Kode OTP tidak valid.');
     }
