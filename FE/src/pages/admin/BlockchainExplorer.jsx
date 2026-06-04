@@ -128,14 +128,14 @@ export default function BlockchainExplorer() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                     {/* Block Index */}
                     <div style={{
-                      width: 52, height: 52, borderRadius: 'var(--radius-md)',
+                      minWidth: 64, padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-md)',
                       background: cfg.color + '15',
                       border: `1px solid ${cfg.color}33`,
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                       flexShrink: 0,
                     }}>
                       <div style={{ fontSize: '0.625rem', color: cfg.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Block</div>
-                      <div style={{ fontSize: '0.875rem', fontWeight: 800, color: cfg.color, fontFamily: 'var(--font-mono)' }}>#{block.id}</div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: 800, color: cfg.color, fontFamily: 'var(--font-mono)' }}>#{String(block.id).substring(0, 8)}</div>
                     </div>
 
                     {/* Event Info */}
