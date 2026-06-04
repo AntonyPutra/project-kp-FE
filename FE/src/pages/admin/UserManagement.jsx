@@ -12,9 +12,6 @@ const ROLE_CONFIG = {
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../lib/api';
-import dayjs from 'dayjs';
-import 'dayjs/locale/id';
-dayjs.locale('id');
 
 function UserAvatar({ user }) {
   const color = ROLE_CONFIG[user.role]?.color || '#6366f1';
@@ -204,7 +201,7 @@ export default function UserManagement() {
                     </span>
                   </div>
                 </td>
-                <td style={{ fontSize: '0.8125rem' }}>{dayjs(user.created_at).format('DD MMM YYYY')}</td>
+                <td style={{ fontSize: '0.8125rem' }}>{new Date(user.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                 <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>-</td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.375rem' }}>
