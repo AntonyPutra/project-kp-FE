@@ -40,7 +40,7 @@ services:
   # ────────────────────────────────────────────────
   frontend:
     build:
-      context: .
+      context: ./FE
       dockerfile: Dockerfile.frontend
       args:
         VITE_API_URL: https://api.whaleestudio.my.id
@@ -79,7 +79,7 @@ services:
   # ────────────────────────────────────────────────
   backend:
     build:
-      context: ./backend
+      context: ./BE
       dockerfile: Dockerfile
     image: sicams-backend:latest
     container_name: sicams_backend
@@ -93,7 +93,7 @@ services:
       - sicams_storage:/var/www/html/storage
       - sicams_logs:/var/www/html/storage/logs
     env_file:
-      - ./backend/.env.production
+      - ./BE/.env.production
     environment:
       - TZ=Asia/Jakarta
       - PHP_OPCACHE_ENABLE=1
@@ -131,7 +131,7 @@ services:
       - sicams_storage:/var/www/html/storage
       - sicams_logs:/var/www/html/storage/logs
     env_file:
-      - ./backend/.env.production
+      - ./BE/.env.production
     environment:
       - TZ=Asia/Jakarta
     depends_on:
@@ -158,7 +158,7 @@ services:
     volumes:
       - sicams_storage:/var/www/html/storage
     env_file:
-      - ./backend/.env.production
+      - ./BE/.env.production
     environment:
       - TZ=Asia/Jakarta
     depends_on:
