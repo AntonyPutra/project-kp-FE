@@ -13,37 +13,59 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Super Admin
+        // Super Admin
         User::firstOrCreate(
-            ['email' => 'admin@whaleestudio.my.id'],
+            ['email' => 'superadmin@sicams.id'],
             [
-                'name' => 'Super Administrator',
-                'password' => Hash::make('AdminSICAMS2026!'),
+                'name' => 'Super Admin',
+                'password' => Hash::make('Admin123!'),
                 'role' => 'super_admin',
-                'nik' => '1234567890123456',
-                'phone' => '081234567890',
+                'nik' => '1111111111111111',
+                'phone' => '081111111111',
             ]
         );
 
-        // Create Default Pimpinan
+        // Admin
         User::firstOrCreate(
-            ['email' => 'kepala@desa.id'],
+            ['email' => 'admin@sicams.id'],
             [
-                'name' => 'Kepala Desa',
-                'password' => Hash::make('KepalaDesa2026!'),
-                'role' => 'pimpinan',
-                'nik' => '1234567890123457',
+                'name' => 'Admin Kelurahan',
+                'password' => Hash::make('Admin123!'),
+                'role' => 'admin',
+                'nik' => '2222222222222222',
             ]
         );
 
-        // Create Default Masyarakat
+        // Petugas
         User::firstOrCreate(
-            ['email' => 'warga@desa.id'],
+            ['email' => 'petugas@sicams.id'],
             [
-                'name' => 'Warga Teladan',
-                'password' => Hash::make('WargaDesa2026!'),
+                'name' => 'Petugas Lapangan',
+                'password' => Hash::make('Admin123!'),
+                'role' => 'petugas',
+                'nik' => '3333333333333333',
+            ]
+        );
+
+        // Masyarakat
+        User::firstOrCreate(
+            ['email' => 'user@sicams.id'],
+            [
+                'name' => 'Budi Santoso',
+                'password' => Hash::make('User123!'),
                 'role' => 'masyarakat',
-                'nik' => '1234567890123458',
+                'nik' => '4444444444444444',
+            ]
+        );
+
+        // Pimpinan
+        User::firstOrCreate(
+            ['email' => 'pimpinan@sicams.id'],
+            [
+                'name' => 'Kepala Kelurahan',
+                'password' => Hash::make('Admin123!'),
+                'role' => 'pimpinan',
+                'nik' => '5555555555555555',
             ]
         );
     }
