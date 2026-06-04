@@ -17,8 +17,8 @@ class ApiTraceLogger
     {
         $response = $next($request);
 
-        // Format date exactly like the Go log
-        $date = now()->format('Y/m/d H:i:s');
+        // Format date exactly like the Go log, set to Asia/Jakarta (WIB)
+        $date = now()->setTimezone('Asia/Jakarta')->format('Y/m/d H:i:s');
         
         // Format Headers like map[Key:[value] ...]
         $headers = collect($request->headers->all())->map(function ($value) {

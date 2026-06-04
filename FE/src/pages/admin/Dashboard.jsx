@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, FileText, Package, Heart,
-  Link2, Bell, BarChart2, Settings, LogOut,
+  Link2, Bell, BarChart2, Settings as SettingsIcon, LogOut,
   Shield, ChevronRight, Menu, X, Bot, Activity,
   Layers, AlertCircle,
 } from 'lucide-react';
@@ -44,7 +44,7 @@ const NAV_ITEMS = [
     section: 'Sistem',
     items: [
       { icon: BarChart2, label: 'Analytics', path: '/admin/analytics', color: '#fb923c' },
-      { icon: Settings, label: 'Pengaturan', path: '/admin/settings', color: '#94a3b8' },
+      { icon: SettingsIcon, label: 'Pengaturan', path: '/admin/settings', color: '#94a3b8' },
     ],
   },
 ];
