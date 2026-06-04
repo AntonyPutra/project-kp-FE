@@ -18,6 +18,8 @@ import SocialAid from './SocialAid';
 import LetterManagement from './LetterManagement';
 import AIAssistant from './AIAssistant';
 import ActivityLogs from './ActivityLogs';
+import Analytics from './Analytics';
+import Settings from './Settings';
 
 const NAV_ITEMS = [
   {
@@ -316,6 +318,8 @@ export default function AdminDashboard() {
             <Route path="letters" element={<LetterManagement />} />
             <Route path="ai" element={<AIAssistant />} />
             <Route path="activity" element={<ActivityLogs />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="*" element={<AdminHome />} />
           </Routes>
         </main>

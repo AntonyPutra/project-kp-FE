@@ -4,6 +4,7 @@ import {
   Activity, CheckCircle, Clock, XCircle, Link2, Eye,
   ArrowUpRight, RefreshCw, Download, Filter,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement,
@@ -254,6 +255,7 @@ function StatCard({ stat, delay = 0 }) {
 }
 
 export default function AdminHome() {
+  const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -436,7 +438,7 @@ export default function AdminHome() {
                 </span>
               </div>
             ))}
-            <button className="btn btn-secondary btn-sm" style={{ width: '100%', marginTop: '0.75rem', fontSize: '0.75rem', borderColor: 'rgba(167,139,250,0.3)', color: '#a78bfa' }}>
+            <button onClick={() => navigate('/admin/blockchain')} className="btn btn-secondary btn-sm" style={{ width: '100%', marginTop: '0.75rem', fontSize: '0.75rem', borderColor: 'rgba(167,139,250,0.3)', color: '#a78bfa' }}>
               <Link2 size={12} />
               Buka Block Explorer
             </button>
