@@ -8,6 +8,10 @@ use App\Http\Controllers\AssetController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\SocialAidController;
 
+Route::get('/health', function () {
+    return response()->json(['status' => 'OK'], 200);
+});
+
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     
