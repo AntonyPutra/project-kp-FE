@@ -98,6 +98,12 @@ services:
       - TZ=Asia/Jakarta
       - PHP_OPCACHE_ENABLE=1
       - PHP_OPCACHE_MEMORY=256
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-sicams_production}
+      - DB_USERNAME=${DB_USERNAME:-sicams_user}
+      - DB_PASSWORD=${DB_PASSWORD:-SicamsDB2026!}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 30s
@@ -134,6 +140,12 @@ services:
       - ./BE/.env.production
     environment:
       - TZ=Asia/Jakarta
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-sicams_production}
+      - DB_USERNAME=${DB_USERNAME:-sicams_user}
+      - DB_PASSWORD=${DB_PASSWORD:-SicamsDB2026!}
     depends_on:
       backend:
         condition: service_healthy
@@ -161,6 +173,12 @@ services:
       - ./BE/.env.production
     environment:
       - TZ=Asia/Jakarta
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-sicams_production}
+      - DB_USERNAME=${DB_USERNAME:-sicams_user}
+      - DB_PASSWORD=${DB_PASSWORD:-SicamsDB2026!}
     depends_on:
       backend:
         condition: service_healthy
