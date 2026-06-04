@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "SICAMS API",
+    "name": "SICAMS Full API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -27,10 +27,10 @@
   },
   "item": [
     {
-      "name": "Auth",
+      "name": "🔐 Auth Service",
       "item": [
         {
-          "name": "Login",
+          "name": "Registrasi pengguna baru (role: masyarakat)",
           "request": {
             "method": "POST",
             "header": [
@@ -43,10 +43,37 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ],
+              "variable": []
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"superadmin@sicams.id\",\n  \"password\": \"Admin123!\"\n}"
-            },
+              "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"email\": \"budi@example.com\",\n  \"nik\": \"3201234567890001\",\n  \"password\": \"SecurePass123!\",\n  \"password_confirmation\": \"SecurePass123!\",\n  \"phone\": \"081234567890\",\n  \"address\": \"Jl. Merdeka No. 1, RT 01/02, Kel. Sukamaju\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login dan mendapatkan token JWT",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": [
@@ -55,39 +82,88 @@
               "path": [
                 "auth",
                 "login"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Me",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/me",
-              "host": [
-                "{{base_url}}"
               ],
-              "path": [
-                "auth",
-                "me"
-              ]
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@sicams.id\",\n  \"password\": \"SecurePass123!\"\n}"
             }
           }
         },
         {
-          "name": "Logout",
+          "name": "Verifikasi OTP untuk MFA",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/verify-otp",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-otp"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_token\": \"eyJ0eXAiOiJKV1QiLC...\",\n  \"otp\": \"847291\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh access token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"eyJ0eXAiOiJKV1QiLC...\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout dan revoke token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
                 "value": "application/json"
               }
             ],
@@ -99,38 +175,13 @@
               "path": [
                 "auth",
                 "logout"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Assets",
-      "item": [
-        {
-          "name": "Get All Assets",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assets",
-              "host": [
-                "{{base_url}}"
               ],
-              "path": [
-                "assets"
-              ]
+              "variable": []
             }
           }
         },
         {
-          "name": "Create Asset",
+          "name": "Kirim link reset password",
           "request": {
             "method": "POST",
             "header": [
@@ -143,49 +194,359 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Laptop Baru\",\n  \"category\": \"Elektronik\",\n  \"condition\": \"good\",\n  \"value\": 5000000\n}"
-            },
             "url": {
-              "raw": "{{base_url}}/assets",
+              "raw": "{{base_url}}/auth/forgot-password",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "assets"
-              ]
+                "auth",
+                "forgot-password"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"budi@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset password dengan token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token-from-email\",\n  \"email\": \"budi@example.com\",\n  \"password\": \"NewSecurePass123!\",\n  \"password_confirmation\": \"NewSecurePass123!\"\n}"
             }
           }
         }
       ]
     },
     {
-      "name": "Letters (Surat)",
+      "name": "👥 User Service",
       "item": [
         {
-          "name": "Get All Letters",
+          "name": "List semua pengguna dengan pagination dan filter",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/letters",
+              "raw": "{{base_url}}/users",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "letters"
+                "users"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Buat pengguna baru (oleh admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Siti Rahayu\",\n  \"email\": \"siti@example.com\",\n  \"nik\": \"3201234567890002\",\n  \"role_id\": 3,\n  \"phone\": \"081234567891\",\n  \"address\": \"Jl. Sudirman No. 5\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Detail pengguna",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
               ]
             }
           }
         },
         {
-          "name": "Apply for Letter",
+          "name": "Update data pengguna",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Nonaktifkan pengguna (soft delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Aktifkan/nonaktifkan pengguna",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id/toggle-status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "toggle-status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Profil pengguna yang sedang login",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Update profil sendiri",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Riwayat aktivitas pengguna yang login",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/activity-logs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "activity-logs"
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📄 Community Service — Layanan Surat",
+      "item": [
+        {
+          "name": "List pengajuan surat (filter by role)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/community/letters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "community",
+                "letters"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Ajukan surat baru",
           "request": {
             "method": "POST",
             "header": [
@@ -194,11 +555,22 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{base_url}}/community/letters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "community",
+                "letters"
+              ],
+              "variable": []
+            },
             "body": {
               "mode": "formdata",
               "formdata": [
                 {
-                  "key": "type",
+                  "key": "letter_type",
                   "value": "domisili",
                   "type": "text"
                 },
@@ -208,27 +580,33 @@
                   "type": "text"
                 },
                 {
+                  "key": "recipient_name",
+                  "value": "Budi Santoso",
+                  "type": "text"
+                },
+                {
+                  "key": "recipient_nik",
+                  "value": "3201234567890001",
+                  "type": "text"
+                },
+                {
                   "key": "notes",
-                  "value": "Tolong dipercepat ya pak",
+                  "value": "Surat untuk pendaftaran BPJS Kesehatan",
+                  "type": "text"
+                },
+                {
+                  "key": "documents",
+                  "value": "[\"[File KTP]\",\"[File KK]\"]",
                   "type": "text"
                 }
               ]
-            },
-            "url": {
-              "raw": "{{base_url}}/letters",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "letters"
-              ]
             }
           }
         },
         {
-          "name": "Update Letter Status",
+          "name": "Detail pengajuan surat + riwayat approval",
           "request": {
-            "method": "PUT",
+            "method": "GET",
             "header": [
               {
                 "key": "Accept",
@@ -239,19 +617,165 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"approved\"\n}"
-            },
             "url": {
-              "raw": "{{base_url}}/letters/1/status",
+              "raw": "{{base_url}}/community/letters/:id",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "community",
                 "letters",
-                "1",
-                "status"
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Tracking surat tanpa login (public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/community/letters/track/:tracking_number",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "community",
+                "letters",
+                "track",
+                ":tracking_number"
+              ],
+              "variable": [
+                {
+                  "key": "tracking_number",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Setujui pengajuan surat (Petugas/Admin/Pimpinan)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/community/letters/:id/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "community",
+                "letters",
+                ":id",
+                "approve"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"approved\",\n  \"notes\": \"Dokumen lengkap dan valid.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Tolak pengajuan surat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/community/letters/:id/reject",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "community",
+                "letters",
+                ":id",
+                "reject"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"rejected\",\n  \"notes\": \"Dokumen KTP tidak terbaca. Mohon upload ulang.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Download surat yang sudah disetujui (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/community/letters/:id/download",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "community",
+                "letters",
+                ":id",
+                "download"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
               ]
             }
           }
@@ -259,93 +783,325 @@
       ]
     },
     {
-      "name": "Social Aids (Bansos)",
+      "name": "🤝 Social Aid Service — Bantuan Sosial",
       "item": [
         {
-          "name": "Get Programs",
+          "name": "List program bantuan sosial",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/social-aids",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "social-aids"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Create Program",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
               },
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Bansos Tunai\",\n  \"description\": \"Bansos covid\",\n  \"quota\": 100\n}"
-            },
             "url": {
-              "raw": "{{base_url}}/social-aids",
+              "raw": "{{base_url}}/social-aid/programs",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "social-aids"
-              ]
+                "social-aid",
+                "programs"
+              ],
+              "variable": []
             }
           }
         },
         {
-          "name": "Apply for Bansos",
+          "name": "Daftar sebagai penerima bantuan",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"PHK\"\n}"
-            },
             "url": {
-              "raw": "{{base_url}}/social-aids/1/apply",
+              "raw": "{{base_url}}/social-aid/apply",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "social-aids",
-                "1",
+                "social-aid",
                 "apply"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "social_aid_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "monthly_income",
+                  "value": "1500000",
+                  "type": "text"
+                },
+                {
+                  "key": "dependents",
+                  "value": "3",
+                  "type": "text"
+                },
+                {
+                  "key": "occupation",
+                  "value": "Buruh Harian Lepas",
+                  "type": "text"
+                },
+                {
+                  "key": "home_ownership",
+                  "value": "rented",
+                  "type": "text"
+                },
+                {
+                  "key": "reason",
+                  "value": "Penghasilan tidak mencukupi kebutuhan pokok keluarga...",
+                  "type": "text"
+                },
+                {
+                  "key": "documents",
+                  "value": "[\"[Surat Keterangan Tidak Mampu]\",\"[KTP]\",\"[KK]\"]",
+                  "type": "text"
+                }
               ]
             }
           }
         },
         {
-          "name": "Get Applications",
+          "name": "List semua aplikasi bantuan (Admin/Petugas)",
           "request": {
             "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social-aid/applications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social-aid",
+                "applications"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Riwayat pengajuan bantuan milik masyarakat yang login",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social-aid/applications/my",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social-aid",
+                "applications",
+                "my"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Verifikasi data oleh Petugas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social-aid/applications/:id/verify",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social-aid",
+                "applications",
+                ":id",
+                "verify"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"verified\",\n  \"notes\": \"Data lapangan sesuai dengan pengajuan.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve/Reject oleh Admin atau Pimpinan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social-aid/applications/:id/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social-aid",
+                "applications",
+                ":id",
+                "approve"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Catat penyaluran bantuan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social-aid/applications/:id/distribute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social-aid",
+                "applications",
+                ":id",
+                "distribute"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount_distributed\": 600000,\n  \"distribution_method\": \"transfer\",\n  \"notes\": \"Transfer via BRI ke rekening penerima.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Statistik bantuan sosial (Admin/Pimpinan)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social-aid/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social-aid",
+                "dashboard"
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Asset Service",
+      "item": [
+        {
+          "name": "List aset dengan filter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Tambah aset baru",
+          "request": {
+            "method": "POST",
             "header": [
               {
                 "key": "Accept",
@@ -353,19 +1109,101 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/social-aids/applications",
+              "raw": "{{base_url}}/assets",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "social-aids",
-                "applications"
+                "assets"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "category_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "location_id",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Laptop Dell Inspiron 15",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Laptop untuk kegiatan administrasi",
+                  "type": "text"
+                },
+                {
+                  "key": "purchase_price",
+                  "value": "8500000",
+                  "type": "text"
+                },
+                {
+                  "key": "purchase_date",
+                  "value": "2025-01-15",
+                  "type": "text"
+                },
+                {
+                  "key": "vendor",
+                  "value": "Toko Komputer Maju",
+                  "type": "text"
+                },
+                {
+                  "key": "condition",
+                  "value": "good",
+                  "type": "text"
+                },
+                {
+                  "key": "photos",
+                  "value": "[\"[File Photo]\"]",
+                  "type": "text"
+                }
               ]
             }
           }
         },
         {
-          "name": "Update Application Status",
+          "name": "Detail aset + riwayat peminjaman",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update data aset",
           "request": {
             "method": "PUT",
             "header": [
@@ -378,20 +1216,426 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"approved\"\n}"
-            },
             "url": {
-              "raw": "{{base_url}}/social-aids/applications/1/status",
+              "raw": "{{base_url}}/assets/:id",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "social-aids",
-                "applications",
-                "1",
-                "status"
+                "assets",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hapus/dispose aset",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Generate/download QR Code aset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/:id/qr",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                ":id",
+                "qr"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ajukan peminjaman aset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/borrow",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                "borrow"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_id\": 55,\n  \"borrow_date\": \"2026-06-10\",\n  \"expected_return_date\": \"2026-06-15\",\n  \"purpose\": \"Digunakan untuk kegiatan rapat RT tanggal 10-15 Juni 2026\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve/Reject peminjaman (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/borrowings/:id/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                "borrowings",
+                ":id",
+                "approve"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Catat pengembalian aset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/borrowings/:id/return",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                "borrowings",
+                ":id",
+                "return"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actual_return_date\": \"2026-06-14\",\n  \"condition_after\": \"good\",\n  \"notes\": \"Aset dikembalikan dalam kondisi baik.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List kategori aset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                "categories"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Tambah kategori",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                "categories"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "List lokasi aset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                "locations"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Tambah lokasi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assets/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assets",
+                "locations"
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⛓️ Blockchain Service",
+      "item": [
+        {
+          "name": "List semua block (Block Explorer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/blockchain/blocks",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "blockchain",
+                "blocks"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Detail block tertentu",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/blockchain/blocks/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "blockchain",
+                "blocks",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verifikasi integritas seluruh blockchain",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/blockchain/verify",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "blockchain",
+                "verify"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Riwayat audit trail untuk record tertentu",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/blockchain/audit/:table/:record_id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "blockchain",
+                "audit",
+                ":table",
+                ":record_id"
+              ],
+              "variable": [
+                {
+                  "key": "table",
+                  "value": "1"
+                },
+                {
+                  "key": "record_id",
+                  "value": "1"
+                }
               ]
             }
           }
@@ -399,48 +1643,356 @@
       ]
     },
     {
-      "name": "Blockchain Audit Trail",
+      "name": "🔔 Notification Service",
       "item": [
         {
-          "name": "Get Audit Logs",
+          "name": "List notifikasi milik pengguna yang login",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/audit-logs",
+              "raw": "{{base_url}}/notifications",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "audit-logs"
+                "notifications"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Tandai notifikasi sebagai sudah dibaca",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/:id/read",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                ":id",
+                "read"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
               ]
             }
           }
         },
         {
-          "name": "Verify Blockchain Hash",
+          "name": "Tandai semua notifikasi sebagai sudah dibaca",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/read-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Jumlah notifikasi belum dibaca",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/audit-logs/verify",
+              "raw": "{{base_url}}/notifications/unread-count",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "audit-logs",
-                "verify"
-              ]
+                "notifications",
+                "unread-count"
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard & Analytics",
+      "item": [
+        {
+          "name": "Statistik utama dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard",
+                "stats"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Data chart aktivitas sistem (7/30/90 hari)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/charts/activity",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard",
+                "charts",
+                "activity"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Data chart pengajuan surat per bulan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/charts/letters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard",
+                "charts",
+                "letters"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Data chart distribusi status aset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/charts/assets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard",
+                "charts",
+                "assets"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Data chart distribusi bantuan sosial",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/charts/social-aid",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard",
+                "charts",
+                "social-aid"
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🤖 AI Assistant",
+      "item": [
+        {
+          "name": "Chat dengan AI Assistant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ai/chat",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ai",
+                "chat"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Bagaimana cara mengajukan surat domisili?\",\n  \"context\": \"user_guide\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Smart search di seluruh data sistem",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ai/smart-search",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ai",
+                "smart-search"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Generate ringkasan laporan otomatis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ai/generate-report-summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ai",
+                "generate-report-summary"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"report_type\": \"monthly\",\n  \"period\": \"2026-05\"\n}"
             }
           }
         }
