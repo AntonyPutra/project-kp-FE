@@ -59,6 +59,11 @@ export default function UserLetters() {
       return; 
     }
 
+    if (file && file.size > 3 * 1024 * 1024) {
+      toast.error('Ukuran berkas tidak boleh lebih dari 3MB.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('type', form.type);
     formData.append('purpose', form.purpose);
