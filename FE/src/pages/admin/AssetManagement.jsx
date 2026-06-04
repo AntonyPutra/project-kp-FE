@@ -226,8 +226,8 @@ export default function AssetManagement() {
             <div className="modal-body">
               <div style={{ background: 'white', padding: '1rem', borderRadius: 'var(--radius-lg)', display: 'inline-block', margin: '0.5rem 0' }}>
                 <QRCode
-                  value={`sicams://asset/${showQR.code}`}
-                  size={180}
+                  value={`${window.location.origin}/public/asset/${showQR.code}`}
+                  size={200}
                   level="H"
                   includeMargin={false}
                 />

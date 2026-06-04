@@ -21,7 +21,12 @@ Route::prefix('auth')->group(function () {
     });
 });
 
+Route::get('/public/assets/{code}', [AssetController::class, 'showPublic']);
+
 Route::middleware('auth:sanctum')->group(function () {
+    // Users
+    Route::apiResource('users', \App\Http\Controllers\UserController::class);
+
     // Assets
     Route::apiResource('assets', AssetController::class);
 

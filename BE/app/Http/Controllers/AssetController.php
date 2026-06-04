@@ -60,4 +60,10 @@ class AssetController extends Controller
         $asset->delete();
         return response()->json(['message' => 'Asset deleted successfully']);
     }
+
+    public function showPublic($code)
+    {
+        $asset = Asset::where('code', $code)->firstOrFail();
+        return response()->json($asset);
+    }
 }

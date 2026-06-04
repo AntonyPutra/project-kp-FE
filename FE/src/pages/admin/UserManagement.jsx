@@ -10,16 +10,11 @@ const ROLE_CONFIG = {
   'pimpinan':    { label: 'Pimpinan',    class: 'badge-warning', color: '#f59e0b' },
 };
 
-const INITIAL_USERS = [
-  { id: 1, name: 'Super Administrator', email: 'superadmin@sicams.id', nik: '3201000000000001', role: 'super-admin', status: true,  created: '2026-01-01', lastLogin: '5 mnt lalu',   avatar: 'SA' },
-  { id: 2, name: 'Admin Kelurahan',      email: 'admin@sicams.id',      nik: '3201000000000002', role: 'admin',       status: true,  created: '2026-01-05', lastLogin: '1 jam lalu',    avatar: 'AK' },
-  { id: 3, name: 'Petugas Lapangan',     email: 'petugas@sicams.id',     nik: '3201000000000003', role: 'petugas',     status: true,  created: '2026-01-10', lastLogin: '3 jam lalu',    avatar: 'PL' },
-  { id: 4, name: 'Budi Santoso',         email: 'budi@example.com',      nik: '3201234567890001', role: 'masyarakat',  status: true,  created: '2026-02-15', lastLogin: '2 hari lalu',   avatar: 'BS' },
-  { id: 5, name: 'Siti Rahayu',          email: 'siti@example.com',      nik: '3201234567890002', role: 'masyarakat',  status: true,  created: '2026-02-20', lastLogin: '1 hari lalu',   avatar: 'SR' },
-  { id: 6, name: 'Ahmad Fauzi',          email: 'ahmad@example.com',     nik: '3201234567890003', role: 'masyarakat',  status: false, created: '2026-03-01', lastLogin: '2 minggu lalu', avatar: 'AF' },
-  { id: 7, name: 'Kepala Kelurahan',     email: 'pimpinan@sicams.id',    nik: '3201000000000005', role: 'pimpinan',    status: true,  created: '2026-01-01', lastLogin: '30 mnt lalu',   avatar: 'KK' },
-  { id: 8, name: 'Dewi Lestari',         email: 'dewi@example.com',      nik: '3201234567890004', role: 'masyarakat',  status: true,  created: '2026-03-10', lastLogin: '3 hari lalu',   avatar: 'DL' },
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../../lib/api';
+import dayjs from 'dayjs';
+import 'dayjs/locale/id';
+dayjs.locale('id');
 
 function UserAvatar({ user }) {
   const color = ROLE_CONFIG[user.role]?.color || '#6366f1';
@@ -31,64 +26,97 @@ function UserAvatar({ user }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: '0.6875rem', fontWeight: 700, color, flexShrink: 0,
     }}>
-      {user.avatar}
+      {user.name ? user.name.slice(0, 2).toUpperCase() : '??'}
     </div>
   );
 }
 
 export default function UserManagement() {
-  const [users, setUsers] = useState(INITIAL_USERS);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', nik: '', role: 'masyarakat', status: true });
+  const [form, setForm] = useState({ name: '', email: '', nik: '', role: 'masyarakat', status: true, password: '' });
+
+  // Fetch users
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const res = await api.get('/users');
+      // Format role matching the ROLE_CONFIG mapping:
+      // 'super_admin' from DB becomes 'super-admin' in UI mapping if needed, or we just map it.
+      // Let's adjust DB 'super_admin' to 'super-admin' for frontend consistency.
+      return res.data.map(u => ({ ...u, role: u.role === 'super_admin' ? 'super-admin' : u.role }));
+    }
+  });
 
   const filtered = users.filter(u => {
-    const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) ||
-                        u.email.toLowerCase().includes(search.toLowerCase()) ||
-                        u.nik.includes(search);
+    const matchSearch = (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
+                        (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
+                        (u.nik || '').includes(search);
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
     return matchSearch && matchRole;
   });
 
+  const saveMutation = useMutation({
+    mutationFn: async (data) => {
+      if (editUser) {
+        // change super-admin back to super_admin for backend
+        const payload = { ...data, role: data.role === 'super-admin' ? 'super_admin' : data.role };
+        return await api.put(`/users/${editUser.id}`, payload);
+      } else {
+        const payload = { ...data, role: data.role === 'super-admin' ? 'super_admin' : data.role };
+        return await api.post('/users', payload);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['users']);
+      toast.success(editUser ? 'Pengguna berhasil diperbarui' : 'Pengguna berhasil ditambahkan');
+      setShowModal(false);
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Terjadi kesalahan saat menyimpan data');
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => await api.delete(`/users/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['users']);
+      toast.success('Pengguna berhasil dihapus');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Gagal menghapus pengguna');
+    }
+  });
+
   const openCreate = () => {
     setEditUser(null);
-    setForm({ name: '', email: '', nik: '', role: 'masyarakat', status: true });
+    setForm({ name: '', email: '', nik: '', role: 'masyarakat', status: true, password: '' });
     setShowModal(true);
   };
 
   const openEdit = (user) => {
     setEditUser(user);
-    setForm({ name: user.name, email: user.email, nik: user.nik, role: user.role, status: user.status });
+    setForm({ name: user.name, email: user.email, nik: user.nik || '', role: user.role, status: user.status ?? true, password: '' });
     setShowModal(true);
   };
 
   const handleSave = () => {
     if (!form.name || !form.email) { toast.error('Nama dan email wajib diisi.'); return; }
-    if (editUser) {
-      setUsers(prev => prev.map(u => u.id === editUser.id ? { ...u, ...form } : u));
-      toast.success('Data pengguna berhasil diperbarui!');
-    } else {
-      const newUser = {
-        ...form, id: Date.now(), created: new Date().toLocaleDateString('id-ID'),
-        lastLogin: '-', avatar: form.name.slice(0, 2).toUpperCase(),
-      };
-      setUsers(prev => [newUser, ...prev]);
-      toast.success('Pengguna baru berhasil ditambahkan!');
-    }
-    setShowModal(false);
+    saveMutation.mutate(form);
   };
 
   const toggleStatus = (id) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, status: !u.status } : u));
-    const user = users.find(u => u.id === id);
-    toast.success(`Akun ${user.name} ${user.status ? 'dinonaktifkan' : 'diaktifkan'}.`);
+    // Optional: implement status toggle if backend supports it. Currently assuming all true.
+    toast.error('Fitur ganti status masih dalam pengembangan (backend belum mendukung).');
   };
 
   const deleteUser = (id) => {
-    setUsers(prev => prev.filter(u => u.id !== id));
-    toast.success('Pengguna berhasil dihapus.');
+    if (window.confirm('Yakin ingin menghapus pengguna ini?')) {
+      deleteMutation.mutate(id);
+    }
   };
 
   return (
@@ -170,14 +198,14 @@ export default function UserManagement() {
                 <td><span className={`badge ${ROLE_CONFIG[user.role].class}`}>{ROLE_CONFIG[user.role].label}</span></td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div className={`status-dot ${user.status ? 'online' : 'offline'}`} />
-                    <span style={{ fontSize: '0.8125rem', color: user.status ? '#34d399' : '#f87171' }}>
-                      {user.status ? 'Aktif' : 'Nonaktif'}
+                    <div className={`status-dot online`} />
+                    <span style={{ fontSize: '0.8125rem', color: '#34d399' }}>
+                      Aktif
                     </span>
                   </div>
                 </td>
-                <td style={{ fontSize: '0.8125rem' }}>{user.created}</td>
-                <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>{user.lastLogin}</td>
+                <td style={{ fontSize: '0.8125rem' }}>{dayjs(user.created_at).format('DD MMM YYYY')}</td>
+                <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>-</td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.375rem' }}>
                     <button className="btn btn-ghost btn-sm" onClick={() => openEdit(user)} title="Edit">
@@ -228,8 +256,12 @@ export default function UserManagement() {
                 <input className="input" type="email" placeholder="email@example.com" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
               </div>
               <div className="input-group">
-                <label className="input-label">NIK</label>
+                <label className="input-label">NIK (Opsional)</label>
                 <input className="input" placeholder="16 digit NIK" maxLength={16} value={form.nik} onChange={e => setForm(p => ({ ...p, nik: e.target.value }))} />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Password {editUser ? '(Kosongkan jika tidak ingin diubah)' : '(Opsional, default: Admin123!)'}</label>
+                <input className="input" type="password" placeholder="Masukkan password" value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} />
               </div>
               <div className="input-group">
                 <label className="input-label">Role</label>
@@ -240,9 +272,9 @@ export default function UserManagement() {
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
-              <button className="btn btn-primary" onClick={handleSave}>
+              <button className="btn btn-primary" onClick={handleSave} disabled={saveMutation.isPending}>
                 <CheckCircle size={14} />
-                {editUser ? 'Simpan Perubahan' : 'Tambah Pengguna'}
+                {saveMutation.isPending ? 'Menyimpan...' : editUser ? 'Simpan Perubahan' : 'Tambah Pengguna'}
               </button>
             </div>
           </div>

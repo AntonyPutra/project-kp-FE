@@ -9,6 +9,7 @@ import LoginPage from './pages/auth/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import UserDashboard from './pages/user/Dashboard';
 import PimpinanDashboard from './pages/pimpinan/Dashboard';
+import PublicAsset from './pages/public/PublicAsset';
 
 // Protected Route Wrapper
 function ProtectedRoute({ children, allowedRoles }) {
@@ -74,6 +75,7 @@ function App() {
       />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/public/asset/:code" element={<PublicAsset />} />
         <Route path="/" element={<RoleRedirect />} />
         <Route
           path="/admin/*"
